@@ -13,13 +13,14 @@ from __future__ import annotations
 
 import logging
 
-from backend.database import get_db
-from backend.features.reports.pdf_service import generate_health_report
-from backend.features.reports.deployment_service import get_deployment_timeline
-from backend.shared.models import Repo
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from backend.database import get_db
+from backend.features.reports.deployment_service import get_deployment_timeline
+from backend.features.reports.pdf_service import generate_health_report
+from backend.shared.models import Repo
 
 logger = logging.getLogger(__name__)
 
