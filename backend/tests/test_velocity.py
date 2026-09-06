@@ -1,22 +1,22 @@
 """Tests for the velocity & delivery cadence metrics module."""
+
 from __future__ import annotations
 
-import math
 from datetime import datetime, timedelta, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from backend.features.metrics.velocity import (
     _deviation,
+    _empty_response,
     _iso_week_key,
     _week_start,
-    _empty_response,
     compute_velocity,
 )
 
-
 # ── pure helper tests ──────────────────────────────────────────────────────────
+
 
 class TestIsoWeekKey:
     def test_monday(self):
@@ -78,6 +78,7 @@ class TestEmptyResponse:
 
 
 # ── async compute_velocity tests ───────────────────────────────────────────────
+
 
 def _make_commit(
     *,

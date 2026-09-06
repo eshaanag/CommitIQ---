@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy import text
 
 from backend.config import MAX_CONCURRENT_INGESTIONS
-from backend.database import _IS_SQLITE, AsyncSessionLocal, commit_with_retry, engine
+from backend.database import _IS_SQLITE, commit_with_retry, engine
 from backend.features.repo_ingestion.router import _update_job, get_ingestion_semaphore
 from backend.shared.models import AnalysisJob, Repo
 
@@ -105,7 +105,9 @@ async def test_update_job_with_provided_session():
 async def test_concurrent_sqlite_writes_with_retry(tmp_path):
     """Simulate multiple concurrent background tasks writing to the database simultaneously."""
     import uuid
+
     from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
     from backend.database import Base
 
     db_path = tmp_path / "test_concurrency.db"
