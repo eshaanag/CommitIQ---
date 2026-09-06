@@ -24,7 +24,7 @@
     "react-dom": "18.3.1",
     "react-force-graph-2d": "1.25.7",
     "react-markdown": "9.0.3",
-    "react-router-dom": "6.30.4",
+    "react-router-dom": "7.18.3",
     "recharts": "2.12.7",
     "swr": "2.2.5"
   },
