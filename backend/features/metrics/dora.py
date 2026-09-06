@@ -42,7 +42,9 @@ async def compute_dora_metrics(
     deploy_stmt = select(Deployment).where(
         Deployment.repo_id == repo_id,
         Deployment.status == "success",
-        (Deployment.ref == default_branch) | (Deployment.ref == f"refs/heads/{default_branch}") | (Deployment.ref.is_(None))
+        (Deployment.ref == default_branch)
+        | (Deployment.ref == f"refs/heads/{default_branch}")
+        | (Deployment.ref.is_(None)),
     )
     if parsed_start is not None:
         deploy_stmt = deploy_stmt.where(Deployment.deployed_at >= parsed_start)
