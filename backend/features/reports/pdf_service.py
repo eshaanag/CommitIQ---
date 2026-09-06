@@ -28,6 +28,7 @@ from backend.features.metrics.cycle_time import compute_cycle_time_metrics
 from backend.features.metrics.dora import compute_dora_metrics
 from backend.features.metrics.team_health import compute_team_health
 from backend.shared.models import HealthSnapshot, Repo
+
 try:
     from reportlab.lib import colors
     from reportlab.lib.enums import TA_CENTER
@@ -42,6 +43,7 @@ try:
         TableStyle,
     )
     from reportlab.platypus.flowables import HRFlowable
+
     HAS_REPORTLAB = True
 except ImportError:
     HAS_REPORTLAB = False
