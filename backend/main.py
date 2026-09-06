@@ -8,11 +8,11 @@ from backend.config import CORS_ORIGINS, ENVIRONMENT
 from backend.database import AsyncSessionLocal, engine, init_db
 from backend.demo_seeder import seed_demo_data_if_empty
 from backend.features.llm_analysis.router import router as llm_router
-from backend.features.metrics.router import router as metrics_router
 from backend.features.metrics.digest_router import router as digest_router
 from backend.features.metrics.recommendations_router import router as recs_router
-from backend.features.reports.router import router as reports_router
+from backend.features.metrics.router import router as metrics_router
 from backend.features.repo_ingestion.router import router as ingestion_router
+from backend.features.reports.router import router as reports_router
 from backend.features.reports.schedule_router import router as schedule_router
 from backend.features.webhooks.router import router as webhooks_router
 from backend.scheduler import start_scheduler, stop_scheduler

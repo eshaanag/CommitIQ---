@@ -55,7 +55,9 @@ class Repo(Base):
     bus_factor = relationship("BusFactor", back_populates="repo", cascade="all, delete-orphan")
     deployments = relationship("Deployment", back_populates="repo", cascade="all, delete-orphan")
     pull_requests = relationship("PullRequest", back_populates="repo", cascade="all, delete-orphan")
-    report_schedules = relationship("ReportSchedule", back_populates="repo", cascade="all, delete-orphan")
+    report_schedules = relationship(
+        "ReportSchedule", back_populates="repo", cascade="all, delete-orphan"
+    )
 
 
 class Deployment(Base):
@@ -330,7 +332,9 @@ class ReportSchedule(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     repo = relationship("Repo", back_populates="report_schedules")
-    deliveries = relationship("ReportDelivery", back_populates="schedule", cascade="all, delete-orphan")
+    deliveries = relationship(
+        "ReportDelivery", back_populates="schedule", cascade="all, delete-orphan"
+    )
 
     __table_args__ = (
         Index("idx_report_schedules_repo", "repo_id"),
@@ -342,7 +346,9 @@ class ReportDelivery(Base):
     __tablename__ = "report_deliveries"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    schedule_id = Column(Integer, ForeignKey("report_schedules.id", ondelete="CASCADE"), nullable=False)
+    schedule_id = Column(
+        Integer, ForeignKey("report_schedules.id", ondelete="CASCADE"), nullable=False
+    )
     repo_id = Column(Integer, ForeignKey("repos.id", ondelete="CASCADE"), nullable=False)
     status = Column(String, nullable=False, default="pending")  # pending, running, success, failed
     report_type = Column(String, nullable=False)
