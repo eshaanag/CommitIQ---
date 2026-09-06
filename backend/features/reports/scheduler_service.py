@@ -3,6 +3,7 @@
 Handles cron-expression parsing, next-run computation, report payload
 generation, webhook delivery with HMAC signing, and delivery retry logic.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -15,14 +16,14 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import httpx
-from sqlalchemy import select, func as sa_func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.shared.models import (
     Commit,
+    Repo,
     ReportDelivery,
     ReportSchedule,
-    Repo,
 )
 
 logger = logging.getLogger(__name__)
@@ -32,8 +33,13 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 _DOW_MAP = {
-    "SUN": 0, "MON": 1, "TUE": 2, "WED": 3,
-    "THU": 4, "FRI": 5, "SAT": 6,
+    "SUN": 0,
+    "MON": 1,
+    "TUE": 2,
+    "WED": 3,
+    "THU": 4,
+    "FRI": 5,
+    "SAT": 6,
 }
 
 
@@ -116,7 +122,10 @@ def compute_next_run(cron_expr: str, tz_name: str, after: datetime | None = None
 # Report payload generation
 # ---------------------------------------------------------------------------
 
-async def generate_report_payload(db: AsyncSession, repo_id: int, report_type: str) -> dict[str, Any]:
+
+async def generate_report_payload(
+    db: AsyncSession, repo_id: int, report_type: str
+) -> dict[str, Any]:
     """Build a JSON-serialisable report payload from the latest repo metrics."""
 
     # Fetch repo metadata
@@ -136,7 +145,12 @@ async def generate_report_payload(db: AsyncSession, repo_id: int, report_type: s
     latest_commit = result.scalars().first() if hasattr(result, "scalars") else None
 
     # Fallback: just get the last commit
-    c_stmt = select(Commit).where(Commit.repo_id == repo_id).order_by(Commit.committed_at.desc()).limit(1)
+    c_stmt = (
+        select(Commit)
+        .where(Commit.repo_id == repo_id)
+        .order_by(Commit.committed_at.desc())
+        .limit(1)
+    )
     c_result = await db.execute(c_stmt)
     last_commit = c_result.scalar_one_or_none()
 
@@ -181,7 +195,9 @@ async def generate_report_payload(db: AsyncSession, repo_id: int, report_type: s
             "sha": last_commit.sha,
             "message": (last_commit.message or "")[:200],
             "author": last_commit.author_name,
-            "committed_at": last_commit.committed_at.isoformat() if last_commit.committed_at else None,
+            "committed_at": (
+                last_commit.committed_at.isoformat() if last_commit.committed_at else None
+            ),
         }
 
     if report_type == "dora_metrics":
@@ -192,6 +208,7 @@ async def generate_report_payload(db: AsyncSession, repo_id: int, report_type: s
         }
     elif report_type == "team_health":
         from collections import defaultdict
+
         hour_dist: dict[int, int] = defaultdict(int)
         for c in all_commits:
             if c.committed_at:
@@ -207,6 +224,7 @@ async def generate_report_payload(db: AsyncSession, repo_id: int, report_type: s
 # ---------------------------------------------------------------------------
 # Webhook delivery with optional HMAC-SHA256 signing
 # ---------------------------------------------------------------------------
+
 
 async def deliver_webhook(
     webhook_url: str,
@@ -237,6 +255,7 @@ async def deliver_webhook(
 # ---------------------------------------------------------------------------
 # Execute a single scheduled report run
 # ---------------------------------------------------------------------------
+
 
 async def execute_scheduled_report(db: AsyncSession, schedule_id: int) -> ReportDelivery:
     """Execute a scheduled report: generate payload, deliver via webhook, record delivery.
@@ -294,7 +313,9 @@ async def execute_scheduled_report(db: AsyncSession, schedule_id: int) -> Report
         schedule.last_run_at = datetime.now(timezone.utc)
         schedule.last_delivery_status = "success"
         schedule.consecutive_failures = 0
-        schedule.next_run_at = compute_next_run(schedule.cron_expression, schedule.timezone, after=datetime.now(timezone.utc))
+        schedule.next_run_at = compute_next_run(
+            schedule.cron_expression, schedule.timezone, after=datetime.now(timezone.utc)
+        )
 
     except Exception as exc:
         elapsed = round(time.monotonic() - start_time, 2)
@@ -324,6 +345,7 @@ async def execute_scheduled_report(db: AsyncSession, schedule_id: int) -> Report
 # Validate a cron expression for user-facing error messages
 # ---------------------------------------------------------------------------
 
+
 def validate_cron_expression(expression: str) -> tuple[bool, str]:
     """Validate a 5-field cron expression. Returns (is_valid, error_message)."""
     try:
@@ -337,11 +359,20 @@ def validate_cron_expression(expression: str) -> tuple[bool, str]:
 # Build a human-readable schedule description from cron
 # ---------------------------------------------------------------------------
 
+
 def describe_cron(expression: str) -> str:
     """Return a short human-readable description of a 5-field cron expression."""
     fields = parse_cron(expression)
-    hour_str = ", ".join(str(h) for h in sorted(fields["hour"])) if fields["hour"] != set(range(24)) else "every hour"
-    minute_str = ", ".join(str(m) for m in sorted(fields["minute"])) if fields["minute"] == {0} else f"at minute {', '.join(str(m) for m in sorted(fields['minute']))}"
+    hour_str = (
+        ", ".join(str(h) for h in sorted(fields["hour"]))
+        if fields["hour"] != set(range(24))
+        else "every hour"
+    )
+    minute_str = (
+        ", ".join(str(m) for m in sorted(fields["minute"]))
+        if fields["minute"] == {0}
+        else f"at minute {', '.join(str(m) for m in sorted(fields['minute']))}"
+    )
     day_names = {v: k for k, v in _DOW_MAP.items()}
 
     if fields["weekday"] == set(range(7)):

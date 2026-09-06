@@ -4,11 +4,12 @@ Aggregates commit history into weekly buckets and computes throughput,
 consistency, and contributor distribution signals useful for sprint
 planning and engineering-manager reporting.
 """
+
 from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Any
 
 from sqlalchemy import select
@@ -49,11 +50,7 @@ async def compute_velocity(db: AsyncSession, repo_id: int) -> dict[str, Any]:
     - ``totals``: aggregate averages and streaks
     - ``contributors``: per-author velocity breakdown
     """
-    stmt = (
-        select(Commit)
-        .where(Commit.repo_id == repo_id)
-        .order_by(Commit.committed_at.asc())
-    )
+    stmt = select(Commit).where(Commit.repo_id == repo_id).order_by(Commit.committed_at.asc())
     commits = (await db.execute(stmt)).scalars().all()
 
     if not commits:
@@ -176,13 +173,13 @@ async def compute_velocity(db: AsyncSession, repo_id: int) -> dict[str, Any]:
                 "name": data["name"],
                 "email": data["email"],
                 "commits": data["commits"],
-                "commit_pct": round(data["commits"] / total_commits * 100, 1) if total_commits else 0,
+                "commit_pct": (
+                    round(data["commits"] / total_commits * 100, 1) if total_commits else 0
+                ),
                 "insertions": data["insertions"],
                 "deletions": data["deletions"],
                 "weeks_active": weeks_active,
-                "avg_commits_per_active_week": round(
-                    data["commits"] / max(weeks_active, 1), 1
-                ),
+                "avg_commits_per_active_week": round(data["commits"] / max(weeks_active, 1), 1),
             }
         )
 

@@ -1,8 +1,8 @@
 """Tests for scheduled health report service and API endpoints."""
+
 from __future__ import annotations
 
-import json
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -15,7 +15,6 @@ from backend.features.reports.scheduler_service import (
     parse_cron,
     validate_cron_expression,
 )
-
 
 # ---------------------------------------------------------------------------
 # Cron parsing tests
@@ -204,13 +203,16 @@ class TestExecuteScheduledReport:
         db.flush = AsyncMock()
         db.commit = AsyncMock()
 
-        with patch(
-            "backend.features.reports.scheduler_service.generate_report_payload",
-            new_callable=AsyncMock,
-        ) as mock_gen, patch(
-            "backend.features.reports.scheduler_service.deliver_webhook",
-            new_callable=AsyncMock,
-        ) as mock_webhook:
+        with (
+            patch(
+                "backend.features.reports.scheduler_service.generate_report_payload",
+                new_callable=AsyncMock,
+            ) as mock_gen,
+            patch(
+                "backend.features.reports.scheduler_service.deliver_webhook",
+                new_callable=AsyncMock,
+            ) as mock_webhook,
+        ):
             mock_gen.return_value = {"summary": {}, "report_type": "health_summary"}
             mock_webhook.return_value = (500, "Internal Server Error")
 

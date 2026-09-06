@@ -1,4 +1,5 @@
 """Tests for the deployment timeline computation service."""
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -7,8 +8,8 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from backend.features.reports.deployment_service import (
-    get_deployment_timeline,
     _empty_response,
+    get_deployment_timeline,
 )
 
 
