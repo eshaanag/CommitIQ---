@@ -250,7 +250,7 @@ async def get_or_create_narrative(
     )
     db.add(narrative)
     await db.commit()
-    
+
     # Update Redis cache
     if not demo_mode:
         await set_cached_narrative(cache_key, response_text)

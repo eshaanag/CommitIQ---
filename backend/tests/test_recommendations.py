@@ -1,4 +1,5 @@
 """Tests for the health recommendations engine."""
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -7,15 +8,26 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from backend.features.metrics.recommendations import (
-    _bus_factor, _churn, _complexity, _health_trend, generate_recommendations,
+    _bus_factor,
+    _churn,
+    _complexity,
+    _health_trend,
+    generate_recommendations,
 )
 
 
 def _s(**kw):
-    defaults = dict(health_score=75.0, avg_complexity=5.0, churn_rate=0.15,
-                    hotspot_count=2, hotspot_persistence_score=20,
-                    dependency_density=0.3, has_cycles=False,
-                    avg_semantic_drift=0.1, computed_at=datetime.now(timezone.utc))
+    defaults = dict(
+        health_score=75.0,
+        avg_complexity=5.0,
+        churn_rate=0.15,
+        hotspot_count=2,
+        hotspot_persistence_score=20,
+        dependency_density=0.3,
+        has_cycles=False,
+        avg_semantic_drift=0.1,
+        computed_at=datetime.now(timezone.utc),
+    )
     defaults.update(kw)
     return MagicMock(**defaults)
 
@@ -71,14 +83,17 @@ class TestChurn:
 class TestGenerate:
     @pytest.mark.anyio
     async def test_not_found(self):
-        db = AsyncMock(); db.get.return_value = None
+        db = AsyncMock()
+        db.get.return_value = None
         with pytest.raises(ValueError, match="not found"):
             await generate_recommendations(db, 999)
 
     @pytest.mark.anyio
     async def test_empty(self):
-        db = AsyncMock(); db.get.return_value = MagicMock(name="r", repo_slug="r")
-        e = MagicMock(); e.scalars.return_value.all.return_value = []
+        db = AsyncMock()
+        db.get.return_value = MagicMock(name="r", repo_slug="r")
+        e = MagicMock()
+        e.scalars.return_value.all.return_value = []
         db.execute.return_value = e
         r = await generate_recommendations(db, 1)
         assert r["health_score"] == 100

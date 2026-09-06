@@ -4,14 +4,14 @@ Queries the ``deployments`` table for a repository and computes
 summary statistics and per-deployment timeline entries useful for
 visualising release cadence, success rates, and environment breakdown.
 """
+
 from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.shared.models import Deployment, Repo
@@ -64,9 +64,7 @@ async def get_deployment_timeline(
                 "ref": d.ref or "",
                 "sha": (d.sha or "")[:12],
                 "pipeline_id": d.pipeline_id or "",
-                "deployed_at": (
-                    d.deployed_at.isoformat() if d.deployed_at else ""
-                ),
+                "deployed_at": (d.deployed_at.isoformat() if d.deployed_at else ""),
                 "env_color": _ENV_COLORS.get(d.environment, "slate"),
             }
         )
@@ -77,7 +75,9 @@ async def get_deployment_timeline(
     failure_count = sum(1 for e in entries if e["status"] in {"failed", "error", "canceled"})
     success_rate = round(success_count / max(total, 1) * 100, 1)
 
-    by_env: dict[str, dict[str, int]] = defaultdict(lambda: {"total": 0, "success": 0, "failure": 0})
+    by_env: dict[str, dict[str, int]] = defaultdict(
+        lambda: {"total": 0, "success": 0, "failure": 0}
+    )
     for e in entries:
         env = e["environment"]
         by_env[env]["total"] += 1
