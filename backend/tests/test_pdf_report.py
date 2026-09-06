@@ -17,11 +17,12 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from backend.database import Base, get_db
-from backend.shared.models import Repo
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
+
+from backend.database import Base, get_db
+from backend.shared.models import Repo
 
 pytestmark = pytest.mark.anyio
 
@@ -122,18 +123,22 @@ class TestPdfService:
         mock_result.scalar_one_or_none.return_value = mock_snapshot
         mock_db.execute = AsyncMock(return_value=mock_result)
 
-        with patch(
-            "backend.features.reports.pdf_service.compute_dora_metrics",
-            new_callable=AsyncMock,
-            return_value=mock_dora,
-        ), patch(
-            "backend.features.reports.pdf_service.compute_cycle_time_metrics",
-            new_callable=AsyncMock,
-            return_value=mock_cycle,
-        ), patch(
-            "backend.features.reports.pdf_service.compute_team_health",
-            new_callable=AsyncMock,
-            return_value=mock_health,
+        with (
+            patch(
+                "backend.features.reports.pdf_service.compute_dora_metrics",
+                new_callable=AsyncMock,
+                return_value=mock_dora,
+            ),
+            patch(
+                "backend.features.reports.pdf_service.compute_cycle_time_metrics",
+                new_callable=AsyncMock,
+                return_value=mock_cycle,
+            ),
+            patch(
+                "backend.features.reports.pdf_service.compute_team_health",
+                new_callable=AsyncMock,
+                return_value=mock_health,
+            ),
         ):
             pdf_bytes, filename = await generate_health_report(mock_db, 1)
 
@@ -179,18 +184,22 @@ class TestPdfService:
         mock_result.scalar_one_or_none.return_value = None  # no snapshot
         mock_db.execute = AsyncMock(return_value=mock_result)
 
-        with patch(
-            "backend.features.reports.pdf_service.compute_dora_metrics",
-            new_callable=AsyncMock,
-            return_value=mock_dora,
-        ), patch(
-            "backend.features.reports.pdf_service.compute_cycle_time_metrics",
-            new_callable=AsyncMock,
-            return_value=mock_cycle,
-        ), patch(
-            "backend.features.reports.pdf_service.compute_team_health",
-            new_callable=AsyncMock,
-            return_value=mock_health,
+        with (
+            patch(
+                "backend.features.reports.pdf_service.compute_dora_metrics",
+                new_callable=AsyncMock,
+                return_value=mock_dora,
+            ),
+            patch(
+                "backend.features.reports.pdf_service.compute_cycle_time_metrics",
+                new_callable=AsyncMock,
+                return_value=mock_cycle,
+            ),
+            patch(
+                "backend.features.reports.pdf_service.compute_team_health",
+                new_callable=AsyncMock,
+                return_value=mock_health,
+            ),
         ):
             pdf_bytes, _ = await generate_health_report(mock_db, 1)
 
@@ -279,18 +288,22 @@ class TestReportRouter:
 
         app.dependency_overrides[get_db] = override_get_db
         try:
-            with patch(
-                "backend.features.reports.pdf_service.compute_dora_metrics",
-                new_callable=AsyncMock,
-                return_value=mock_dora,
-            ), patch(
-                "backend.features.reports.pdf_service.compute_cycle_time_metrics",
-                new_callable=AsyncMock,
-                return_value=mock_cycle,
-            ), patch(
-                "backend.features.reports.pdf_service.compute_team_health",
-                new_callable=AsyncMock,
-                return_value=mock_health,
+            with (
+                patch(
+                    "backend.features.reports.pdf_service.compute_dora_metrics",
+                    new_callable=AsyncMock,
+                    return_value=mock_dora,
+                ),
+                patch(
+                    "backend.features.reports.pdf_service.compute_cycle_time_metrics",
+                    new_callable=AsyncMock,
+                    return_value=mock_cycle,
+                ),
+                patch(
+                    "backend.features.reports.pdf_service.compute_team_health",
+                    new_callable=AsyncMock,
+                    return_value=mock_health,
+                ),
             ):
                 client = TestClient(app)
                 response = client.get("/api/repos/1/report")
