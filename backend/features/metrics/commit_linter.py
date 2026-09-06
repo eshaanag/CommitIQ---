@@ -4,6 +4,7 @@ Analyses the commit message corpus of a repository to compute quality
 scores, detect convention compliance (Conventional Commits / Angular),
 flag common anti-patterns, and break down stats per contributor.
 """
+
 from __future__ import annotations
 
 import logging
@@ -97,19 +98,13 @@ def lint_message(message: str | None) -> list[LintViolation]:
         )
 
     if subject.startswith("."):
-        violations.append(
-            LintViolation("hidden_file_prefix", "info", "Subject starts with a dot")
-        )
+        violations.append(LintViolation("hidden_file_prefix", "info", "Subject starts with a dot"))
 
     if subject.endswith("."):
-        violations.append(
-            LintViolation("trailing_period", "info", "Subject ends with a period")
-        )
+        violations.append(LintViolation("trailing_period", "info", "Subject ends with a period"))
 
     if subject.isupper():
-        violations.append(
-            LintViolation("all_caps", "info", "Subject is entirely uppercase")
-        )
+        violations.append(LintViolation("all_caps", "info", "Subject is entirely uppercase"))
 
     if subject.startswith("Merge ") or subject.startswith("Revert "):
         pass  # merge / revert are legitimate conventional patterns
@@ -163,11 +158,7 @@ def lint_message(message: str | None) -> list[LintViolation]:
 
 async def compute_commit_quality(db: AsyncSession, repo_id: int) -> dict[str, Any]:
     """Return commit message quality analytics for *repo_id*."""
-    stmt = (
-        select(Commit)
-        .where(Commit.repo_id == repo_id)
-        .order_by(Commit.committed_at.desc())
-    )
+    stmt = select(Commit).where(Commit.repo_id == repo_id).order_by(Commit.committed_at.desc())
     commits = (await db.execute(stmt)).scalars().all()
 
     if not commits:
@@ -221,8 +212,12 @@ async def compute_commit_quality(db: AsyncSession, repo_id: int) -> dict[str, An
                 at["infos"] += 1
 
     non_merge = max(total - merge_commits, 1)
-    avg_subject_len = round(sum(subject_lengths) / len(subject_lengths), 1) if subject_lengths else 0
-    median_subject_len = sorted(subject_lengths)[len(subject_lengths) // 2] if subject_lengths else 0
+    avg_subject_len = (
+        round(sum(subject_lengths) / len(subject_lengths), 1) if subject_lengths else 0
+    )
+    median_subject_len = (
+        sorted(subject_lengths)[len(subject_lengths) // 2] if subject_lengths else 0
+    )
 
     # quality score: 100 = perfect, each issue deducts points
     convention_rate = conventional_count / non_merge
@@ -232,11 +227,7 @@ async def compute_commit_quality(db: AsyncSession, repo_id: int) -> dict[str, An
         0,
         min(
             100,
-            round(
-                convention_rate * 60
-                + (1 - error_rate) * 20
-                + (1 - warning_rate) * 20
-            ),
+            round(convention_rate * 60 + (1 - error_rate) * 20 + (1 - warning_rate) * 20),
         ),
     )
 

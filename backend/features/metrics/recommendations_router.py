@@ -1,4 +1,5 @@
 """FastAPI router for the actionable health recommendations endpoint."""
+
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
