@@ -4,6 +4,7 @@ import json
 import re
 from typing import Any
 
+
 def parse_llm_json(response_text: str) -> Any:
     """
     Parse a structured JSON explanation from the LLM.
@@ -11,7 +12,7 @@ def parse_llm_json(response_text: str) -> Any:
     (like markdown code blocks) before failing.
     """
     text = response_text.strip()
-    
+
     # 1. Try a direct parse first.
     try:
         return json.loads(text)

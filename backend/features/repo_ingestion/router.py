@@ -44,6 +44,7 @@ def _extract_metrics_in_worktree(repo_path: Path, commit_data: dict) -> tuple[st
                 capture_output=True,
             )
 
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy import delete, desc, func, select
@@ -472,7 +473,9 @@ async def run_ingestion(
             job = await db.get(AnalysisJob, job_id)
             if not job or job.repo_id != repo_id:
                 logger.warning(
-                    "Skipping ingestion for repo_id=%s because job_id=%s was not found", repo_id, job_id
+                    "Skipping ingestion for repo_id=%s because job_id=%s was not found",
+                    repo_id,
+                    job_id,
                 )
                 return
 
@@ -593,7 +596,9 @@ async def run_ingestion(
                         filtered_edges.append(edge)
 
                     hotspot_files = _hotspot_files(commit_history, idx, file_metrics_map)
-                    persistent_hotspots = _persistent_hotspots(commit_history, idx, file_metrics_map)
+                    persistent_hotspots = _persistent_hotspots(
+                        commit_history, idx, file_metrics_map
+                    )
                     dependency_density = len(filtered_edges) / max(len(top_files), 1)
                     has_cycles = _detect_cycles(filtered_edges)
                     snapshot_data = compute_full_snapshot(
@@ -624,7 +629,9 @@ async def run_ingestion(
                     db.add(commit_obj)
                     await db.flush()
 
-                    snapshot = HealthSnapshot(repo_id=repo_id, commit_id=commit_obj.id, **snapshot_data)
+                    snapshot = HealthSnapshot(
+                        repo_id=repo_id, commit_id=commit_obj.id, **snapshot_data
+                    )
                     db.add(snapshot)
 
                     for fpath in top_files:
@@ -636,12 +643,17 @@ async def run_ingestion(
                                 full_sha=commit_obj.full_sha,
                                 file_path=fpath,
                                 module_name=(
-                                    str(Path(fpath).parent) if Path(fpath).parent != Path(".") else None
+                                    str(Path(fpath).parent)
+                                    if Path(fpath).parent != Path(".")
+                                    else None
                                 ),
                                 loc=metrics.get("loc", 0),
                                 avg_complexity=metrics.get("avg_complexity", 0.0),
-                                health_color=assign_health_color(metrics.get("avg_complexity", 0.0)),
-                                is_entry_point=Path(fpath).stem in {"index", "main", "app", "server"},
+                                health_color=assign_health_color(
+                                    metrics.get("avg_complexity", 0.0)
+                                ),
+                                is_entry_point=Path(fpath).stem
+                                in {"index", "main", "app", "server"},
                                 semantic_drift_score=metrics.get("semantic_drift_score", 0.0),
                                 drift_method=metrics.get("drift_method", "none"),
                             )
@@ -740,7 +752,9 @@ async def run_rescan(repo_id: int, job_id: int, max_commits: int) -> None:
             job = await db.get(AnalysisJob, job_id)
             if not job or job.repo_id != repo_id:
                 logger.warning(
-                    "Skipping rescan for repo_id=%s because job_id=%s was not found", repo_id, job_id
+                    "Skipping rescan for repo_id=%s because job_id=%s was not found",
+                    repo_id,
+                    job_id,
                 )
                 return
 
@@ -829,7 +843,9 @@ async def run_rescan(repo_id: int, job_id: int, max_commits: int) -> None:
             max_workers = min(8, (os.cpu_count() or 4) + 4)
             with ProcessPoolExecutor(max_workers=max_workers) as pool:
                 tasks = [
-                    loop.run_in_executor(pool, _extract_metrics_in_worktree, clone_path, commit_data)
+                    loop.run_in_executor(
+                        pool, _extract_metrics_in_worktree, clone_path, commit_data
+                    )
                     for commit_data in new_commits
                 ]
                 results = await asyncio.gather(*tasks)
@@ -899,7 +915,9 @@ async def run_rescan(repo_id: int, job_id: int, max_commits: int) -> None:
                     db.add(commit_obj)
                     await db.flush()
 
-                    snapshot = HealthSnapshot(repo_id=repo_id, commit_id=commit_obj.id, **snapshot_data)
+                    snapshot = HealthSnapshot(
+                        repo_id=repo_id, commit_id=commit_obj.id, **snapshot_data
+                    )
                     db.add(snapshot)
 
                     for fpath in top_files:
@@ -911,12 +929,17 @@ async def run_rescan(repo_id: int, job_id: int, max_commits: int) -> None:
                                 full_sha=commit_obj.full_sha,
                                 file_path=fpath,
                                 module_name=(
-                                    str(Path(fpath).parent) if Path(fpath).parent != Path(".") else None
+                                    str(Path(fpath).parent)
+                                    if Path(fpath).parent != Path(".")
+                                    else None
                                 ),
                                 loc=metrics.get("loc", 0),
                                 avg_complexity=metrics.get("avg_complexity", 0.0),
-                                health_color=assign_health_color(metrics.get("avg_complexity", 0.0)),
-                                is_entry_point=Path(fpath).stem in {"index", "main", "app", "server"},
+                                health_color=assign_health_color(
+                                    metrics.get("avg_complexity", 0.0)
+                                ),
+                                is_entry_point=Path(fpath).stem
+                                in {"index", "main", "app", "server"},
                                 semantic_drift_score=metrics.get("semantic_drift_score", 0.0),
                                 drift_method=metrics.get("drift_method", "none"),
                             )
@@ -1271,9 +1294,7 @@ async def _latest_completed_job_map(db: AsyncSession, repo_ids: list[int]) -> di
         .group_by(AnalysisJob.repo_id)
         .subquery()
     )
-    result = await db.execute(
-        select(subquery.c.repo_id, subquery.c.max_completed_at)
-    )
+    result = await db.execute(select(subquery.c.repo_id, subquery.c.max_completed_at))
     return {repo_id: completed_at for repo_id, completed_at in result.all()}
 
 
