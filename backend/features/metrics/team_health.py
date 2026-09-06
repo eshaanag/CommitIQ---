@@ -5,8 +5,8 @@ from collections import defaultdict
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.shared.models import Commit
 from backend.features.llm_analysis.cache import _get_redis
+from backend.shared.models import Commit
 
 logger = logging.getLogger(__name__)
 

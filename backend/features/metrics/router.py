@@ -36,9 +36,7 @@ async def get_dora_metrics(
     if not repo:
         raise HTTPException(status_code=404, detail="Repository not found")
 
-    metrics = await compute_dora_metrics(
-        db, repo_id, start_date=start_date, end_date=end_date
-    )
+    metrics = await compute_dora_metrics(db, repo_id, start_date=start_date, end_date=end_date)
     return metrics
 
 
