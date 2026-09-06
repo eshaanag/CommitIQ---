@@ -129,7 +129,9 @@ async def test_compute_dora_metrics_with_time_window_deployments(db_session: Asy
 
 
 @pytest.mark.anyio
-async def test_compute_dora_metrics_with_pull_requests_and_string_iso(db_session: AsyncSessionAdapter):
+async def test_compute_dora_metrics_with_pull_requests_and_string_iso(
+    db_session: AsyncSessionAdapter,
+):
     repo = Repo(
         url="https://github.com/org/pr-dora",
         name="org/pr-dora",

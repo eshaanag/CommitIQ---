@@ -1,4 +1,5 @@
 """Tests for the commit message quality linter module."""
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -8,11 +9,10 @@ import pytest
 
 from backend.features.metrics.commit_linter import (
     LintViolation,
-    lint_message,
-    compute_commit_quality,
     _empty_response,
+    compute_commit_quality,
+    lint_message,
 )
-
 
 # ── lint_message tests ─────────────────────────────────────────────────────────
 
