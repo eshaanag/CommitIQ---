@@ -6,6 +6,7 @@ GET /api/repos/{repo_id}/digest?weeks=1
     Returns a single JSON payload aggregating all health signals for the
     requested look-back window.
 """
+
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
