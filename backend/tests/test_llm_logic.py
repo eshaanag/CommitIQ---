@@ -16,7 +16,6 @@ from backend.features.llm_analysis.llm_router import LLMProvider, model_for_prov
 from backend.features.llm_analysis.prompt_builder import build_explain_prompt, build_predict_prompt
 from backend.features.llm_analysis.router import _build_demo_narrative
 
-
 # ────────────────────────────────────────────────────────────────
 # Cache key
 # ────────────────────────────────────────────────────────────────

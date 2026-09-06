@@ -113,6 +113,7 @@ async def _resolve_commit(db: AsyncSession, repo_id: int, commit_sha: str) -> Co
         raise HTTPException(status_code=404, detail=f"Commit {commit_sha} not found")
     return commit
 
+
 async def _build_before_after(
     db: AsyncSession, repo_id: int, commit: Commit
 ) -> tuple[dict, dict, HealthSnapshot]:

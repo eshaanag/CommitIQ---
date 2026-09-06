@@ -3,6 +3,7 @@
 Endpoints allow creating, listing, updating, deleting, and manually
 triggering scheduled reports with full delivery history tracking.
 """
+
 from __future__ import annotations
 
 import logging
@@ -11,7 +12,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import select, desc
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.database import get_db
@@ -22,7 +23,7 @@ from backend.features.reports.scheduler_service import (
     generate_report_payload,
     validate_cron_expression,
 )
-from backend.shared.models import ReportDelivery, ReportSchedule, Repo
+from backend.shared.models import Repo, ReportDelivery, ReportSchedule
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ router = APIRouter(prefix="/report-schedules", tags=["report-schedules"])
 # ---------------------------------------------------------------------------
 # Request / response schemas
 # ---------------------------------------------------------------------------
+
 
 class ReportScheduleCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
@@ -143,6 +145,7 @@ class TriggerResponse(BaseModel):
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _serialize_schedule(s: ReportSchedule) -> dict[str, Any]:
     return {
         "id": s.id,
@@ -190,6 +193,7 @@ def _serialize_delivery(d: ReportDelivery) -> dict[str, Any]:
 # CRUD endpoints
 # ---------------------------------------------------------------------------
 
+
 @router.post("/repos/{repo_id}/schedules", response_model=ScheduleResponse, status_code=201)
 async def create_schedule(
     repo_id: int,
@@ -222,7 +226,10 @@ async def create_schedule(
 
     logger.info(
         "Created report schedule %d for repo %d (%s), next run: %s",
-        schedule.id, repo_id, body.name, next_run.isoformat(),
+        schedule.id,
+        repo_id,
+        body.name,
+        next_run.isoformat(),
     )
     return _serialize_schedule(schedule)
 
@@ -324,6 +331,7 @@ async def toggle_schedule(
 # Trigger & delivery history
 # ---------------------------------------------------------------------------
 
+
 @router.post(
     "/repos/{repo_id}/schedules/{schedule_id}/trigger",
     response_model=TriggerResponse,
@@ -345,7 +353,7 @@ async def trigger_schedule(
         "delivery_id": delivery.id,
         "status": delivery.status,
         "message": f"Report {'delivered' if delivery.status == 'success' else 'execution failed'} "
-                   f"(delivery #{delivery.id})",
+        f"(delivery #{delivery.id})",
     }
 
 
@@ -362,9 +370,8 @@ async def list_deliveries(
     if not schedule or schedule.repo_id != repo_id:
         raise HTTPException(status_code=404, detail="Schedule not found")
 
-    count_stmt = (
-        select(sa_func.count(ReportDelivery.id))
-        .where(ReportDelivery.schedule_id == schedule_id)
+    count_stmt = select(sa_func.count(ReportDelivery.id)).where(
+        ReportDelivery.schedule_id == schedule_id
     )
     total = (await db.execute(count_stmt)).scalar() or 0
 
@@ -415,7 +422,7 @@ async def retry_delivery(
         "delivery_id": delivery.id,
         "status": delivery.status,
         "message": f"Retry {'succeeded' if delivery.status == 'success' else 'failed'} "
-                   f"(new delivery #{delivery.id})",
+        f"(new delivery #{delivery.id})",
     }
 
 
